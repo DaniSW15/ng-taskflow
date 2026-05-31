@@ -1,7 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { map } from 'rxjs';
-import { environment } from '@env/environment';
+import { environment } from '@env/environment.production';
+
 import { ApiResponse, CursorPaginatedList, PaginatedList } from '@models/board.models';
 import { TaskItem, TaskItemStatus, TaskPriority } from '@models/task.models';
 import { Comment } from '@models/comment.models';

@@ -2,7 +2,8 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { tap, catchError, EMPTY } from 'rxjs';
-import { environment } from '@env/environment';
+import { environment } from '@env/environment.production';
+
 import { AuthResponse, LoginRequest, RegisterRequest, UserRole } from '@models/auth.models';
 
 const ACCESS_TOKEN_KEY = 'tf_access_token';

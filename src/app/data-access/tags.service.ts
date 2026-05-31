@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '@env/environment';
+import { environment } from '@env/environment.production';
+
 import { ApiResponse } from '@models/board.models';
 import { Tag } from '@models/tag.models';
 
