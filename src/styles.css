@@ -1,3 +1,6 @@
-/* You can add global styles to this file, and also import other style files */
-
 @import 'tailwindcss';
+@import 'ngx-toastr/toastr';
+
+body {
+  @apply antialiased text-gray-900 bg-gray-50 dark:bg-gray-900 dark:text-gray-100;
+}

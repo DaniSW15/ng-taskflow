@@ -1,59 +1,360 @@
-# NgTaskflow
+# 🏗️ Arquitectura Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.13.
+La aplicación fue desarrollada utilizando una arquitectura moderna, modular y escalable basada en Angular 21.
 
-## Development server
+El objetivo es mantener:
 
-To start a local development server, run:
+* separación de responsabilidades
+* código mantenible
+* componentes reutilizables
+* escalabilidad
+* rendimiento optimizado
 
-```bash
-ng serve
+---
+
+# ⚙️ Tecnologías
+
+* Angular 21
+* Vite
+* TypeScript
+* Angular Signals
+* RxJS
+* Tailwind CSS
+* Angular Router
+* Standalone Components
+* Angular CDK
+
+---
+
+# 🧠 Arquitectura Hexagonal Frontend
+
+El proyecto sigue principios de Arquitectura Hexagonal (Ports & Adapters) para desacoplar la lógica del negocio de frameworks y servicios externos.
+
+Beneficios:
+
+* código desacoplado
+* mayor mantenibilidad
+* testing más sencillo
+* escalabilidad
+* independencia de infraestructura
+
+---
+
+# 📁 Estructura del Proyecto
+
+```txt id="jlwmu9"
+src/
+│
+├── app/
+│   │
+│   ├── core/
+│   ├── shared/
+│   ├── layout/
+│   ├── routes/
+│   │
+│   ├── domains/
+│   │   ├── auth/
+│   │   ├── tasks/
+│   │   └── boards/
+│   │
+│   ├── infrastructure/
+│   │   ├── api/
+│   │   ├── adapters/
+│   │   └── repositories/
+│   │
+│   ├── application/
+│   │   ├── services/
+│   │   ├── use-cases/
+│   │   └── state/
+│   │
+│   └── presentation/
+│       ├── pages/
+│       ├── components/
+│       └── layouts/
+│
+├── assets/
+├── environments/
+└── styles/
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+---
 
-## Code scaffolding
+# 🏛️ Capas de la Arquitectura
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Core
 
-```bash
-ng generate component component-name
+Contiene configuración global de la aplicación.
+
+Responsabilidades:
+
+* autenticación
+* interceptors
+* guards
+* servicios globales
+* configuración principal
+
+```txt id="jlwm9l"
+core/
+├── auth/
+├── guards/
+├── interceptors/
+└── services/
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+---
 
-```bash
-ng generate --help
+# Shared
+
+Componentes y utilidades reutilizables.
+
+Ejemplo:
+
+* botones
+* modales
+* tablas
+* pipes
+* directivas
+* helpers
+
+```txt id="jlwmu1"
+shared/
+├── components/
+├── directives/
+├── pipes/
+└── utils/
 ```
 
-## Building
+---
 
-To build the project run:
+# Domains
 
-```bash
-ng build
+Representa el dominio del negocio.
+
+Cada dominio contiene:
+
+* entidades
+* interfaces
+* modelos
+* lógica específica
+
+Ejemplo:
+
+```txt id="jlwm6z"
+domains/
+├── auth/
+├── tasks/
+└── boards/
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+---
 
-## Running unit tests
+# Application
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+Contiene casos de uso y lógica de aplicación.
 
-```bash
-ng test
+Responsabilidades:
+
+* servicios
+* manejo de estado
+* signals
+* use cases
+* coordinación de flujos
+
+Ejemplo:
+
+```txt id="jlwmc4"
+application/
+├── services/
+├── state/
+└── use-cases/
 ```
 
-## Running end-to-end tests
+---
 
-For end-to-end (e2e) testing, run:
+# Infrastructure
 
-```bash
-ng e2e
+Conecta servicios externos.
+
+Responsabilidades:
+
+* APIs REST
+* adapters
+* repositories
+* integración backend
+
+Ejemplo:
+
+```txt id="jlwm9x"
+infrastructure/
+├── api/
+├── adapters/
+└── repositories/
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+---
 
-## Additional Resources
+# Presentation
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Responsable de la interfaz de usuario.
+
+Contiene:
+
+* páginas
+* componentes
+* layouts
+* vistas
+
+Ejemplo:
+
+```txt id="jlwm1a"
+presentation/
+├── pages/
+├── layouts/
+└── components/
+```
+
+---
+
+# 🔐 Route Guards
+
+La aplicación utiliza Route Guards para proteger rutas privadas y controlar acceso de usuarios.
+
+Objetivos:
+
+* proteger páginas autenticadas
+* validar permisos
+* evitar acceso no autorizado
+* mejorar seguridad frontend
+
+Ejemplo:
+
+```txt id="jlwmd7"
+core/guards/
+├── auth.guard.ts
+├── guest.guard.ts
+└── role.guard.ts
+```
+
+---
+
+# Auth Guard
+
+Protege rutas privadas.
+
+Ejemplo:
+
+```ts id="jlwmp8"
+export const authGuard: CanActivateFn = () => {
+  return inject(AuthService).isAuthenticated();
+};
+```
+
+---
+
+# Guest Guard
+
+Evita que usuarios autenticados accedan a login o registro.
+
+---
+
+# Role Guard
+
+Controla acceso según roles y permisos.
+
+Ejemplo:
+
+* admin
+* manager
+* user
+
+---
+
+# ⚡ Manejo de Estado
+
+El proyecto utiliza Angular Signals para manejo reactivo moderno.
+
+Beneficios:
+
+* mejor rendimiento
+* menos boilerplate
+* reactividad eficiente
+* integración moderna con Angular
+
+RxJS se utiliza para:
+
+* streams asíncronos
+* peticiones HTTP
+* eventos reactivos
+
+---
+
+# 🎨 UI/UX
+
+La interfaz fue diseñada con enfoque en:
+
+* experiencia de usuario moderna
+* navegación intuitiva
+* accesibilidad
+* diseño responsive
+* dark mode
+* feedback visual
+
+Inspiraciones:
+
+* Trello
+* Notion
+* Linear
+* Jira
+
+---
+
+# 🔐 Autenticación
+
+Sistema de autenticación basado en JWT.
+
+Incluye:
+
+* login
+* registro
+* refresh token
+* guards
+* interceptors
+* manejo de sesiones
+
+---
+
+# 🚀 Objetivos Técnicos
+
+Este proyecto demuestra:
+
+* Angular moderno
+* arquitectura hexagonal
+* clean code
+* modularidad
+* escalabilidad
+* UI/UX moderna
+* frontend enterprise
+* integración fullstack
+* buenas prácticas de seguridad
+
+---
+
+# 🏆 Características Técnicas
+
+* standalone architecture
+* lazy loading
+* route guards
+* Angular Signals
+* arquitectura hexagonal
+* reusable components
+* responsive layouts
+* API integration
+* performance optimization
+
+---
+
+# 👨‍💻 Autor
+
+Desarrollado por Daniel Calderón.
+
+Frontend Developer especializado en Angular, arquitectura moderna y experiencias UI/UX.
