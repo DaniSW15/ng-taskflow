@@ -4,16 +4,16 @@ import { BoardsService } from '@data-access/boards.service';
 import { Board } from '@models/board.models';
 
 interface CreateBoardModel {
-    title: string;
-    description: string;
+  title: string;
+  description: string;
 }
 
 @Component({
-    selector: 'app-create-board-modal',
-    standalone: true,
-    imports: [FormField],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    template: `
+  selector: 'app-create-board-modal',
+  standalone: true,
+  imports: [FormField],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
     @if (open()) {
       <!-- Backdrop -->
       <div
@@ -83,58 +83,61 @@ interface CreateBoardModel {
   `
 })
 export class CreateBoardModalComponent {
-    private readonly boardsService = inject(BoardsService);
+  private readonly boardsService = inject(BoardsService);
 
-    // input del padre: controla si el modal está abierto
-    readonly open = input(false);
+  // input del padre: controla si el modal está abierto
+  readonly open = input(false);
 
-    // outputs hacia el padre
-    readonly closed = output<void>();
-    readonly created = output<Board>();
+  // outputs hacia el padre
+  readonly closed = output<void>();
+  readonly created = output<Board>();
 
-    readonly loading = signal(false);
-    readonly error = signal('');
+  readonly loading = signal(false);
+  readonly error = signal('');
 
-    readonly boardModel = signal<CreateBoardModel>({ title: '', description: '' });
+  readonly boardModel = signal<CreateBoardModel>({ title: '', description: '' });
 
-    readonly boardForm = form(this.boardModel, (s) => {
-        required(s.title, { message: 'El nombre es requerido' });
-    });
+  readonly boardForm = form(this.boardModel, (s) => {
+    required(s.title, { message: 'El nombre es requerido' });
+  });
 
-    onSubmit(event: Event) {
-        event.preventDefault();
-        if (this.boardForm().invalid()) return;
+  onSubmit(event: Event) {
+    event.preventDefault();
+    if (this.boardForm().invalid()) return;
 
-        this.loading.set(true);
-        this.error.set('');
+    this.loading.set(true);
+    this.error.set('');
 
-        const { title, description } = this.boardModel();
-        this.boardsService.createBoard(title, description || undefined).subscribe({
-            next: () => {
-                this.loading.set(false);
-                this.resetForm();
-                this.closed.emit();
-                // Emitir un Board parcial para que el padre recargue la lista
-                this.created.emit({ title } as Board);
-            },
-            error: (err: any) => {
-                this.error.set(err.error?.message ?? 'Error al crear el tablero');
-                this.loading.set(false);
-            }
-        });
-    }
-
-    close() {
+    const { title, description } = this.boardModel();
+    this.boardsService.createBoard({
+      title,
+      description: description || undefined
+    }).subscribe({
+      next: () => {
+        this.loading.set(false);
         this.resetForm();
         this.closed.emit();
-    }
+        // Emitir un Board parcial para que el padre recargue la lista
+        this.created.emit({ title } as Board);
+      },
+      error: (err: any) => {
+        this.error.set(err.error?.message ?? 'Error al crear el tablero');
+        this.loading.set(false);
+      }
+    });
+  }
 
-    onBackdropClick(event: MouseEvent) {
-        if (event.target === event.currentTarget) this.close();
-    }
+  close() {
+    this.resetForm();
+    this.closed.emit();
+  }
 
-    private resetForm() {
-        this.boardModel.set({ title: '', description: '' });
-        this.error.set('');
-    }
+  onBackdropClick(event: MouseEvent) {
+    if (event.target === event.currentTarget) this.close();
+  }
+
+  private resetForm() {
+    this.boardModel.set({ title: '', description: '' });
+    this.error.set('');
+  }
 }

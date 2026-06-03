@@ -4,16 +4,16 @@ import { BoardsService } from '@data-access/boards.service';
 import { Board } from '@models/board.models';
 
 interface UpdateBoardModel {
-    title: string;
-    description: string;
+  title: string;
+  description: string;
 }
 
 @Component({
-    selector: 'app-update-board-modal',
-    standalone: true,
-    imports: [FormField],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    template: `
+  selector: 'app-update-board-modal',
+  standalone: true,
+  imports: [FormField],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
     @if (open()) {
       <div
         class="fixed inset-0 bg-black/50 z-40 flex items-center justify-center p-4"
@@ -81,56 +81,60 @@ interface UpdateBoardModel {
   `
 })
 export class UpdateBoardModalComponent {
-    private readonly boardsService = inject(BoardsService);
+  private readonly boardsService = inject(BoardsService);
 
-    readonly open = input(false);
-    readonly board = input<Board | null>(null);
+  readonly open = input(false);
+  readonly board = input<Board | null>(null);
 
-    readonly updated = output<void>();
-    readonly closed = output<void>();
+  readonly updated = output<void>();
+  readonly closed = output<void>();
 
-    readonly loading = signal(false);
-    readonly error = signal('');
+  readonly loading = signal(false);
+  readonly error = signal('');
 
-    readonly boardModel = signal<UpdateBoardModel>({ title: '', description: '' });
-    readonly boardForm = form(this.boardModel, (s) => {
-        required(s.title, { message: 'El nombre es requerido' });
+  readonly boardModel = signal<UpdateBoardModel>({ title: '', description: '' });
+  readonly boardForm = form(this.boardModel, (s) => {
+    required(s.title, { message: 'El nombre es requerido' });
+  });
+
+  constructor() {
+    effect(() => {
+      const b = this.board();
+      if (b) this.boardModel.set({ title: b.title, description: b.description ?? '' });
     });
+  }
 
-    constructor() {
-        effect(() => {
-            const b = this.board();
-            if (b) this.boardModel.set({ title: b.title, description: b.description ?? '' });
-        });
-    }
+  onBackdropClick(event: MouseEvent) {
+    if (event.target === event.currentTarget) this.close();
+  }
 
-    onBackdropClick(event: MouseEvent) {
-        if (event.target === event.currentTarget) this.close();
-    }
+  close() {
+    this.error.set('');
+    this.closed.emit();
+  }
 
-    close() {
-        this.error.set('');
-        this.closed.emit();
-    }
+  onSubmit(event: Event) {
+    event.preventDefault();
+    const b = this.board();
+    if (!b || this.boardForm().invalid()) return;
 
-    onSubmit(event: Event) {
-        event.preventDefault();
-        const b = this.board();
-        if (!b || this.boardForm().invalid()) return;
+    this.loading.set(true);
+    this.error.set('');
 
-        this.loading.set(true);
-        this.error.set('');
-
-        const { title, description } = this.boardModel();
-        this.boardsService.updateBoard(b.id, title, description || undefined).subscribe({
-            next: () => {
-                this.loading.set(false);
-                this.updated.emit();
-            },
-            error: err => {
-                this.error.set(err.error?.message ?? 'Error al guardar');
-                this.loading.set(false);
-            }
-        });
-    }
+    const { title, description } = this.boardModel();
+    this.boardsService.updateBoard(b.id, {
+      title,
+      description: description || undefined,
+      projectId: b.projectId
+    }).subscribe({
+      next: () => {
+        this.loading.set(false);
+        this.updated.emit();
+      },
+      error: err => {
+        this.error.set(err.error?.message ?? 'Error al guardar');
+        this.loading.set(false);
+      }
+    });
+  }
 }
