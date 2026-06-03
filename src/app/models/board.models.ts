@@ -3,9 +3,23 @@ export interface Board {
     title: string;
     description?: string;
     ownerId: string;
+    projectId?: string;
+    projectTitle?: string;
     taskCount: number;
     createdAt: string;
     updatedAt: string;
+}
+
+export interface CreateBoardRequest {
+    title: string;
+    description?: string;
+    projectId?: string;
+}
+
+export interface UpdateBoardRequest {
+    title: string;
+    description?: string;
+    projectId?: string;
 }
 
 export interface PaginatedList<T> {

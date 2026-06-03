@@ -17,6 +17,7 @@ export interface TaskItem {
     boardId: string;
     assigneeId?: string;
     assigneeName?: string;
+    tags?: import('./tag.models').Tag[];
     createdAt: string;
     updatedAt: string;
 }

@@ -20,12 +20,12 @@ export class BoardsService {
         return this.http.get<ApiResponse<Board>>(`${this.baseUrl}/${id}`);
     }
 
-    createBoard(title: string, description?: string) {
-        return this.http.post<ApiResponse<string>>(this.baseUrl, { title, description });
+    createBoard(request: { title: string; description?: string; projectId?: string }) {
+        return this.http.post<ApiResponse<string>>(this.baseUrl, request);
     }
 
-    updateBoard(id: string, title: string, description?: string) {
-        return this.http.put<ApiResponse<void>>(`${this.baseUrl}/${id}`, { title, description });
+    updateBoard(id: string, request: { title: string; description?: string; projectId?: string }) {
+        return this.http.put<ApiResponse<void>>(`${this.baseUrl}/${id}`, request);
     }
 
     deleteBoard(id: string) {
