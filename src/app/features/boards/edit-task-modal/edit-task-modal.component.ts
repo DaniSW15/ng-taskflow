@@ -4,19 +4,19 @@ import { TasksService, UpdateTaskRequest } from '@data-access/tasks.service';
 import { TaskItem, TaskItemStatus, TaskPriority } from '@models/task.models';
 
 interface EditTaskModel {
-    title: string;
-    description: string;
-    status: TaskItemStatus;
-    priority: TaskPriority;
-    dueDate: string;
+  title: string;
+  description: string;
+  status: TaskItemStatus;
+  priority: TaskPriority;
+  dueDate: string;
 }
 
 @Component({
-    selector: 'app-edit-task-modal',
-    standalone: true,
-    imports: [FormField],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    template: `
+  selector: 'app-edit-task-modal',
+  standalone: true,
+  imports: [FormField],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
     @if (open()) {
       <div
         class="fixed inset-0 bg-black/50 z-40 flex items-center justify-center p-4"
@@ -99,21 +99,31 @@ interface EditTaskModel {
               <p class="text-sm text-red-600 dark:text-red-400">{{ error() }}</p>
             }
 
-            <div class="flex justify-end gap-3 pt-2">
+            <div class="flex justify-between pt-2">
               <button
                 type="button"
-                (click)="close()"
-                class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
+                (click)="onDelete()"
+                [disabled]="loading()"
+                class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md disabled:opacity-50"
               >
-                Cancelar
+                {{ loading() ? 'Eliminando...' : 'Eliminar' }}
               </button>
-              <button
-                type="submit"
-                [disabled]="loading() || taskForm().invalid()"
-                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md disabled:opacity-50"
-              >
-                {{ loading() ? 'Guardando...' : 'Guardar cambios' }}
-              </button>
+              <div class="flex gap-3">
+                <button
+                  type="button"
+                  (click)="close()"
+                  class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  [disabled]="loading() || taskForm().invalid()"
+                  class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md disabled:opacity-50"
+                >
+                  {{ loading() ? 'Guardando...' : 'Guardar cambios' }}
+                </button>
+              </div>
             </div>
           </form>
         </div>
@@ -122,81 +132,104 @@ interface EditTaskModel {
   `
 })
 export class EditTaskModalComponent {
-    private readonly tasksService = inject(TasksService);
+  private readonly tasksService = inject(TasksService);
 
-    readonly open = input(false);
-    readonly task = input<TaskItem | null>(null);
+  readonly open = input(false);
+  readonly task = input<TaskItem | null>(null);
 
-    readonly updated = output<void>();
-    readonly closed = output<void>();
+  readonly updated = output<void>();
+  readonly deleted = output<void>();
+  readonly closed = output<void>();
 
-    readonly loading = signal(false);
-    readonly error = signal('');
+  readonly loading = signal(false);
+  readonly error = signal('');
 
-    readonly taskModel = signal<EditTaskModel>({
-        title: '',
-        description: '',
-        status: TaskItemStatus.Todo,
-        priority: TaskPriority.Medium,
-        dueDate: ''
-    });
+  readonly taskModel = signal<EditTaskModel>({
+    title: '',
+    description: '',
+    status: TaskItemStatus.Todo,
+    priority: TaskPriority.Medium,
+    dueDate: ''
+  });
 
-    readonly taskForm = form(this.taskModel, (s) => {
-        required(s.title, { message: 'El título es requerido' });
-        required(s.priority, { message: 'La prioridad es requerida' });
-    });
+  readonly taskForm = form(this.taskModel, (s) => {
+    required(s.title, { message: 'El título es requerido' });
+    required(s.priority, { message: 'La prioridad es requerida' });
+  });
 
-    constructor() {
-        effect(() => {
-            const t = this.task();
-            if (t) {
-                this.taskModel.set({
-                    title: t.title,
-                    description: t.description ?? '',
-                    status: t.status,
-                    priority: t.priority,
-                    dueDate: t.dueDate ? t.dueDate.substring(0, 10) : ''
-                });
-            }
+  constructor() {
+    effect(() => {
+      const t = this.task();
+      if (t) {
+        this.taskModel.set({
+          title: t.title,
+          description: t.description ?? '',
+          status: t.status,
+          priority: t.priority,
+          dueDate: t.dueDate ? t.dueDate.substring(0, 10) : ''
         });
-    }
+      }
+    });
+  }
 
-    onBackdropClick(event: MouseEvent) {
-        if (event.target === event.currentTarget) this.close();
-    }
+  onBackdropClick(event: MouseEvent) {
+    if (event.target === event.currentTarget) this.close();
+  }
 
-    close() {
-        this.error.set('');
-        this.closed.emit();
-    }
+  close() {
+    this.error.set('');
+    this.closed.emit();
+  }
 
-    onSubmit(event: Event) {
-        event.preventDefault();
-        const t = this.task();
-        if (!t || this.taskForm().invalid()) return;
+  onSubmit(event: Event) {
+    event.preventDefault();
+    const t = this.task();
+    if (!t || this.taskForm().invalid()) return;
 
-        this.loading.set(true);
-        this.error.set('');
+    this.loading.set(true);
+    this.error.set('');
 
-        const { title, description, status, priority, dueDate } = this.taskModel();
-        const request: UpdateTaskRequest = {
-            title,
-            description: description || undefined,
-            status,
-            priority,
-            dueDate: dueDate ? `${dueDate}T23:59:59.000Z` : undefined
-        };
+    const { title, description, status, priority, dueDate } = this.taskModel();
+    const request: UpdateTaskRequest = {
+      title,
+      description: description || undefined,
+      status,
+      priority,
+      dueDate: dueDate ? `${dueDate}T23:59:59.000Z` : undefined
+    };
 
-        this.tasksService.updateTask(t.id, request).subscribe({
-            next: () => {
-                this.loading.set(false);
-                this.updated.emit();
-            },
-            error: (err: any) => {
-                const e = err.error;
-                this.error.set(e?.errors?.[0] ?? e?.message ?? 'Error al guardar');
-                this.loading.set(false);
-            }
-        });
-    }
+    this.tasksService.updateTask(t.id, request).subscribe({
+      next: () => {
+        this.loading.set(false);
+        this.updated.emit();
+      },
+      error: (err: any) => {
+        const e = err.error;
+        this.error.set(e?.errors?.[0] ?? e?.message ?? 'Error al guardar');
+        this.loading.set(false);
+      }
+    });
+  }
+
+  onDelete() {
+    const t = this.task();
+    if (!t) return;
+
+    if (!confirm('¿Estás seguro de eliminar esta tarea?')) return;
+
+    this.loading.set(true);
+    this.error.set('');
+
+    this.tasksService.deleteTask(t.id).subscribe({
+      next: () => {
+        this.loading.set(false);
+        this.deleted.emit();
+      },
+      error: (err: any) => {
+        const e = err.error;
+        this.error.set(e?.errors?.[0] ?? e?.message ?? 'Error al eliminar');
+        this.loading.set(false);
+      }
+    });
+  }
 }
